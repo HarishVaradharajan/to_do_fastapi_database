@@ -31,7 +31,7 @@ app=FastAPI()
 
 SECRET_KEY ="7b8f9e2c4d6a1b0c3e4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6"
 ALGORITHM = "HS256"
-TOKEN_EXPIRE_MINUTES = 30
+TOKEN_EXPIRE_MINUTES =30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -45,15 +45,13 @@ fakeusers = {
         "username": "johndoe",
         "full_name": "John Doe",
         "email": "johndoe@example.com",
-        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$NHCqprvysrc+xXJRuxM47w$HiO2KtW6rFzl9m6JdsJ5QnSKjNPs030nReiBtzXh1MM",
-        "disabled": False,
+        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$NHCqprvysrc+xXJRuxM47w$HiO2KtW6rFzl9m6JdsJ5QnSKjNPs030nReiBtzXh1MM"
     },
     "Harish": {
         "username": "Harish",
         "full_name": "Harish",
         "email": "harish@example.com",
-        "hashed_password":"$argon2id$v=19$m=65536,t=3,p=4$mxUBGYsmUqudnLKSID0GpQ$4BU3FgDNH9Lwt89HEP0WD5QfPDvBJhW7GaOmbEPt3yg",
-        "disabled": False,
+        "hashed_password":"$argon2id$v=19$m=65536,t=3,p=4$mxUBGYsmUqudnLKSID0GpQ$4BU3FgDNH9Lwt89HEP0WD5QfPDvBJhW7GaOmbEPt3yg"
     }
 }
 
@@ -66,32 +64,11 @@ def create_access_token(username: str) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or expired token",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-
-        if username is None:
-            raise credentials_exception
-
-        user = fakeusers.get(username)
-
-        if user is None:
-            raise credentials_exception
-
-        if user["disabled"]:
-            raise HTTPException(status_code=400, detail="User is disabled")
-
-        return user
-
-    except InvalidTokenError:
-        raise credentials_exception
-
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    username = payload.get("sub")
+    user = fakeusers.get(username)
+    return user
+    
 orgins=[
     "http://localhost",
     "http://localhost:4200",
@@ -169,5 +146,3 @@ def read_current_user(current_user: dict = Depends(get_current_user)):
         "email": current_user["email"],
         "full_name": current_user["full_name"],
     }
-    
-    
